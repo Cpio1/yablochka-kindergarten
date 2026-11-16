@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+/* Сайт всегда светлый: тёмного варианта нет, dark:-классы не используются. */
+@theme {
+  --color-cream: #fff8ec;
+  --color-paper: #fffdf8;
+  --color-ink: #203f31;
+  --color-ink-soft: #46604f;
+  --color-apple: #b93335;
+  --color-apple-dark: #962629;
+  --color-apple-soft: #f6d9d3;
+  --color-leaf: #dcebcf;
+  --color-leaf-deep: #5b8a45;
+  --color-butter: #ffe3a1;
+  --color-line: #e9dcc4;
+
+  --font-display: var(--ff-display), "Trebuchet MS", system-ui, sans-serif;
+  --font-sans: var(--ff-body), system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --animate-sway: sway 6s ease-in-out infinite;
+  --animate-pop: pop 180ms ease-out;
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(5deg); }
+}
+@keyframes pop {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+
+:root {
+  color-scheme: only light;
+  /* Фактическая высота фиксированной шапки; от неё считаются отступы якорей. */
+  --header-h: 60px;
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+}
+@media (min-width: 1024px) {
+  :root { --header-h: 72px; }
+}
+
+html {
+  scroll-padding-top: calc(var(--header-h) + 12px);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem; /* 17px */
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+p { text-wrap: pretty; }
+
+:focus-visible {
+  outline: 3px solid var(--color-apple);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+
+/* Заголовок, получивший фокус программно после перехода из меню, рамку не показывает. */
+h2[tabindex="-1"]:focus { outline: none; }
+
+::selection { background: var(--color-butter); color: var(--color-ink); }
+
+/* Декор: не перехватывает нажатия и не озвучивается (aria-hidden ставится в разметке). */
+.decor { pointer-events: none; user-select: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+dialog::backdrop { background: rgb(18 36 27 / 0.92); }
