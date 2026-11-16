@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
-/* Сайт всегда светлый: тёмного варианта нет, dark:-классы не используются. */
-@theme {
+/* Сайт всегда светлый: тёмного варианта нет, dark:-классы не используются.
+   static — все цвета попадают в CSS, в том числе используемые только внутри SVG (fill="var(--color-hill)"). */
+@theme static {
   --color-cream: #fff8ec;
   --color-paper: #fffdf8;
   --color-ink: #203f31;
@@ -13,6 +14,21 @@
   --color-leaf-deep: #5b8a45;
   --color-butter: #ffe3a1;
   --color-line: #e9dcc4;
+
+  /* Фоны разделов-«разворотов» (светлые) */
+  --color-meadow: #e8f2dc; /* холм под первым экраном, верх «О садике» */
+  --color-warm: #fff3e3; /* «О садике» */
+  --color-sprout: #e6f1da; /* «Группы» */
+  --color-honey: #fff1c9; /* «Питание» */
+  --color-sky: #eaf4fa; /* «Вопросы» */
+  --color-sky-line: #cfe3ef;
+  --color-garden: #f4f9ee; /* «Контакты» */
+  --color-hill: #cfe5be; /* дальний холм */
+  --color-hill-front: #b5d89c; /* ближний холм и подвал */
+  /* Сочные цвета аппликации */
+  --color-sky-deep: #6fb3de;
+  --color-coral: #f47c64;
+  --color-sun: #ffc93c;
 
   --font-display: var(--ff-display), "Trebuchet MS", system-ui, sans-serif;
   --font-sans: var(--ff-body), system-ui, -apple-system, "Segoe UI", sans-serif;

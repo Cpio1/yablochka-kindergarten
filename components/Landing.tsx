@@ -20,6 +20,24 @@ import {
   WhatsAppIcon,
 } from "./art";
 import { Gallery } from "./Gallery";
+import {
+  Backdrop,
+  BlossomBranch,
+  BlueStroke,
+  Butterfly,
+  Cloud,
+  Daisy,
+  FruitStillLife,
+  GardenHills,
+  HeroHill,
+  Kite,
+  Ladybug,
+  PaperPlane,
+  PlaneWithTrail,
+  Sun,
+  Tape,
+  Wave,
+} from "./scenery";
 import { SectionLink } from "./SectionLink";
 import { SiteHeader } from "./SiteHeader";
 
@@ -71,8 +89,9 @@ export function Landing({ locale }: { locale: Locale }) {
         <Contacts locale={locale} />
       </main>
 
-      <footer className="border-t border-line bg-cream">
-        <div className={`${container} flex flex-col gap-3 py-8 text-[0.9375rem] text-ink-soft sm:flex-row sm:items-center sm:justify-between`}>
+      {/* Подвал — продолжение ближнего холма из раздела «Контакты». */}
+      <footer className="bg-hill-front text-ink">
+        <div className={`${container} flex flex-col gap-3 pb-8 pt-4 text-[0.9375rem] text-ink sm:flex-row sm:items-center sm:justify-between`}>
           <p className="flex items-center gap-2 font-semibold text-ink">
             <AppleMark className="h-7 w-7" />
             {t.footer.name}
@@ -123,8 +142,20 @@ function Hero({ locale, photo }: { locale: Locale; photo: Photo | null }) {
     <section
       id="top"
       aria-labelledby="hero-title"
-      className="relative pt-(--header-h) lg:flex lg:min-h-[min(100svh,880px)] lg:items-center"
+      className="relative isolate bg-cream pt-(--header-h) lg:flex lg:min-h-[min(100svh,880px)] lg:items-center"
     >
+      {/* Под названием, описанием и кнопками фон остаётся чистым: фигурки — только в полосе под шапкой и у краёв. */}
+      <Backdrop>
+        {/* Телефон: одно солнце в правом верхнем углу, справа от названия. */}
+        <Sun className="absolute right-3 top-[calc(var(--header-h)+0.5rem)] w-11 sm:right-6 sm:w-14 lg:hidden" />
+        {/* Ноутбук: солнце и два облака в свободной полосе между шапкой и заголовком (если окно достаточно высокое). */}
+        <div className="hidden lg:[@media(min-height:740px)]:block">
+          <Sun className="absolute left-[max(14rem,calc(50%-600px+15rem))] top-[calc(var(--header-h)+0.6rem)] w-[clamp(44px,7svh,68px)]" />
+          <Cloud className="absolute left-[max(20rem,calc(50%-600px+22rem))] top-[calc(var(--header-h)+1.1rem)] w-[clamp(72px,10svh,118px)]" />
+          <Cloud variant={1} className="absolute right-[max(2rem,calc(50%-600px+4rem))] top-[calc(var(--header-h)+1.6rem)] w-[clamp(52px,7svh,84px)]" />
+        </div>
+        <HeroHill className="absolute inset-x-0 bottom-0 h-7 w-full sm:h-10 lg:h-[72px]" />
+      </Backdrop>
       <div
         className={`${container} grid items-center gap-6 pb-10 pt-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-10 lg:py-8 xl:gap-16 [@media(max-height:700px)]:pt-3`}
       >
@@ -173,6 +204,7 @@ function Hero({ locale, photo }: { locale: Locale; photo: Photo | null }) {
         </div>
 
         <div className="relative flex justify-center lg:justify-end">
+          <Butterfly className="decor pointer-events-none absolute -top-4 right-0 z-10 hidden w-24 lg:block xl:-right-6 xl:w-28" />
           {photo ? (
             <HeroPhoto photo={photo} alt={t.imageAlt} />
           ) : (
@@ -246,7 +278,16 @@ function About({ locale, media }: { locale: Locale; media: AboutMedia | null }) 
   );
 
   return (
-    <section id="about" aria-labelledby="about-title" className="py-12 lg:py-20">
+    <section
+      id="about"
+      aria-labelledby="about-title"
+      className="relative isolate bg-[linear-gradient(to_bottom,var(--color-meadow)_0,var(--color-warm)_9rem)] py-12 lg:py-20"
+    >
+      <Backdrop>
+        {/* Ветка яблони входит в кадр сбоку, у внешнего края; текст остаётся на ровном фоне. */}
+        <BlossomBranch className="absolute -right-6 -top-2 w-24 lg:hidden" />
+        <BlossomBranch className="absolute -right-12 top-8 hidden w-[clamp(220px,22vw,320px)] lg:block xl:right-[max(-3rem,calc(50%-600px-8rem))]" />
+      </Backdrop>
       <div className={container}>
         {/* Телефон: заголовок → вступление → фото/видео → информация для родителей. */}
         <div data-anchor className={`grid gap-7 lg:grid-cols-2 lg:gap-x-16 ${media ? "lg:gap-y-8" : "lg:items-start"}`}>
@@ -293,12 +334,15 @@ function AboutMediaView({ media, t }: { media: AboutMedia; t: ReturnType<typeof 
 function Groups({ locale }: { locale: Locale }) {
   const t = getDictionary(locale).groups;
   return (
-    <section id="groups" aria-labelledby="groups-title" className="pb-6 lg:pb-10">
+    <section id="groups" aria-labelledby="groups-title" className="relative isolate bg-sprout py-12 lg:py-16">
+      <Wave color="var(--color-sprout)" variant={0} />
+      <Backdrop>
+        {/* От 1360px: воздушный змей в свободном правом поле рядом с «4 группы» (не заходит под карточку).
+            Уже — только ветка с яблоками у заголовка. */}
+        <Kite className="absolute right-[max(0.5rem,calc(50%-600px-8.5rem))] top-6 hidden w-[clamp(84px,8vw,124px)] rotate-6 min-[1360px]:block" />
+      </Backdrop>
       <div className={container}>
-        <div
-          data-anchor
-          className="grid gap-7 rounded-[2rem] bg-leaf px-4 py-7 sm:px-10 sm:py-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14 lg:rounded-[2.75rem] lg:px-14 lg:py-14"
-        >
+        <div data-anchor className="grid gap-7 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14">
           <div>
             {/* Телефон: одна небольшая веточка в строке подписи — без отдельной строки под декор. */}
             <div className="flex items-center justify-between gap-3">
@@ -348,12 +392,14 @@ function Groups({ locale }: { locale: Locale }) {
 function Food({ locale }: { locale: Locale }) {
   const t = getDictionary(locale).food;
   return (
-    <section id="food" aria-labelledby="food-title" className="py-6 lg:py-10">
+    <section id="food" aria-labelledby="food-title" className="relative isolate bg-honey py-12 lg:py-16">
+      <Wave color="var(--color-honey)" variant={1} />
+      <Backdrop>
+        {/* Ноутбук: натюрморт вдоль нижнего края под колонкой с цифрой 5. Телефон: только тарелка у заголовка. */}
+        <FruitStillLife className="absolute bottom-0 left-[max(1rem,calc(50%-600px+1.5rem))] hidden w-[clamp(190px,17vw,240px)] lg:block" />
+      </Backdrop>
       <div className={container}>
-        <div
-          data-anchor
-          className="grid gap-x-14 gap-y-5 rounded-[2rem] bg-butter px-4 py-7 sm:px-10 sm:py-10 lg:grid-cols-[auto_minmax(0,1fr)] lg:rounded-[2.75rem] lg:px-14 lg:py-14"
-        >
+        <div data-anchor className="grid gap-x-14 gap-y-5 lg:grid-cols-[auto_minmax(0,1fr)]">
           <div className="flex items-center gap-3 lg:col-start-2 lg:block">
             <div className="min-w-0 flex-1">
               <p className={eyebrow}>{t.eyebrow}</p>
@@ -401,15 +447,19 @@ function Food({ locale }: { locale: Locale }) {
 function GallerySection({ locale, photos }: { locale: Locale; photos: Photo[] }) {
   const t = getDictionary(locale).gallery;
   return (
-    <section id="gallery" aria-labelledby="gallery-title" className="mt-6 bg-paper py-14 lg:mt-10 lg:py-20">
+    <section id="gallery" aria-labelledby="gallery-title" className="relative isolate bg-paper py-14 lg:py-20">
+      <Wave color="var(--color-paper)" variant={2} />
       <div className={container}>
-        <div data-anchor className="mb-6 max-w-2xl lg:mb-10">
+        {/* Заголовок — как начало страницы детского альбома: скотч, фотоаппарат, голубой штрих карандаша. */}
+        <div data-anchor className="relative mb-6 max-w-2xl lg:mb-10">
+          <Tape className="pointer-events-none absolute -top-7 left-1 w-20 -rotate-6 lg:-top-9 lg:w-24" />
           <div className="flex items-center gap-3 lg:gap-4">
             <h2 id="gallery-title" className={h2}>
               {t.title}
             </h2>
             <PaperCamera className="h-9 w-11 shrink-0 lg:h-12 lg:w-14" />
           </div>
+          <BlueStroke className="mt-1 h-4 w-44 lg:h-5 lg:w-56" />
           <p className={`${lead} mt-3`}>{t.intro}</p>
         </div>
         <Gallery locale={locale} photos={photos} />
@@ -423,18 +473,26 @@ function GallerySection({ locale, photos }: { locale: Locale; photos: Photo[] })
 function Faq({ locale }: { locale: Locale }) {
   const t = getDictionary(locale).faq;
   return (
-    <section id="faq" aria-labelledby="faq-title" className="py-12 lg:py-20">
+    <section id="faq" aria-labelledby="faq-title" className="relative isolate bg-sky py-12 lg:py-20">
+      <Wave color="var(--color-sky)" variant={0} flip />
+      <Backdrop>
+        {/* Телефон: маленький самолётик в верхнем отступе, справа от заголовка. */}
+        <PaperPlane className="absolute right-4 top-2 w-12 lg:hidden" />
+        {/* От 1360px (поле шире самолётика): самолётик со следом вдоль внешнего поля аккордеона — вопросы остаются на ровном фоне. */}
+        <PlaneWithTrail className="absolute right-[max(0.25rem,calc(50%-600px-7rem))] top-8 hidden h-[min(420px,85%)] w-[100px] min-[1360px]:block" />
+      </Backdrop>
       <div className={`${container} grid gap-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16`}>
-        <div data-anchor>
-          <Twig className="mb-3 h-6 w-24" />
+        <div data-anchor className="relative">
           <h2 id="faq-title" className={h2}>
             {t.title}
           </h2>
           <p className="mt-3 max-w-[36ch] leading-relaxed text-ink-soft">{t.lead}</p>
+          {/* 1024–1359px: боковые поля узкие — самолётик под заголовком, в свободной части левой колонки. */}
+          <PaperPlane className="pointer-events-none absolute left-0 top-full mt-8 hidden w-20 -rotate-6 lg:block min-[1360px]:hidden" />
         </div>
-        <div className="border-t-2 border-line">
+        <div className="border-t-2 border-sky-line">
           {t.items.map((item) => (
-            <details key={item.q} className="group border-b-2 border-line">
+            <details key={item.q} className="group border-b-2 border-sky-line">
               <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 rounded-xl py-4 font-display text-[1.125rem] font-semibold leading-snug text-ink transition-colors hover:text-apple lg:text-[1.25rem] [&::-webkit-details-marker]:hidden">
                 <span>{item.q}</span>
                 <span
@@ -481,7 +539,7 @@ function WithPhone({ text }: { text: string }) {
 function Documents({ locale }: { locale: Locale }) {
   const t = getDictionary(locale).documents;
   return (
-    <section id="documents" aria-labelledby="documents-title" className="pb-12 lg:pb-20">
+    <section id="documents" aria-labelledby="documents-title" className="relative isolate bg-sky pb-12 lg:pb-20">
       <div className={container}>
         <div data-anchor className="rounded-[2rem] border-2 border-line bg-paper px-5 py-7 sm:px-10 lg:px-14 lg:py-12">
           <h2 id="documents-title" className={h2}>
@@ -526,7 +584,23 @@ function Contacts({ locale }: { locale: Locale }) {
   const card = "flex min-h-[4.5rem] items-center gap-4 rounded-[1.5rem] px-5 py-4 transition-colors";
   const label = "block text-[0.9375rem] leading-snug";
   return (
-    <section id="contacts" aria-labelledby="contacts-title" className="bg-leaf/45 py-14 lg:py-20">
+    <section id="contacts" aria-labelledby="contacts-title" className="relative isolate bg-garden pb-24 pt-14 sm:pb-28 lg:pb-40 lg:pt-20">
+      <Wave color="var(--color-garden)" variant={1} flip />
+      {/* Сад внизу страницы. Нижний отступ секции выше холмов — телефон, часы и кнопки остаются над ними. */}
+      <Backdrop>
+        <GardenHills className="absolute inset-x-0 bottom-0 h-16 w-full sm:h-20 lg:h-[120px]" />
+        {/* Телефон: одна божья коровка на холме. */}
+        <Ladybug className="absolute bottom-7 right-8 w-8 sm:hidden" />
+        {/* Шире: ромашки на обоих холмах и божья коровка. */}
+        <div className="hidden sm:block">
+          <Daisy className="absolute bottom-6 left-[6%] w-7 lg:bottom-12 lg:w-9" />
+          <Daisy className="absolute bottom-4 left-[10%] w-5 lg:bottom-9 lg:w-7" />
+          <Daisy className="absolute bottom-3 left-[47%] w-6 lg:bottom-6 lg:w-8" />
+          <Daisy className="absolute bottom-5 right-[14%] w-7 lg:bottom-10 lg:w-9" />
+          <Daisy className="absolute bottom-3 right-[9%] w-5 lg:bottom-7 lg:w-7" />
+          <Ladybug className="absolute bottom-8 right-[24%] w-8 lg:bottom-14 lg:w-10" />
+        </div>
+      </Backdrop>
       <div className={`${container} grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-16`}>
         <div data-anchor>
           <Twig className="mb-3 h-6 w-24" />
