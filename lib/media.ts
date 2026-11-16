@@ -22,6 +22,8 @@ export type Photo = {
   height: number;
   /** object-position для превью; для групповых кадров можно сдвинуть, чтобы сохранить лица у краёв. */
   focus?: string;
+  /** Короткая подпись — только по тому, что действительно видно на снимке. */
+  caption?: { ru: string; kk: string };
 };
 
 export type AboutMedia =
@@ -35,9 +37,13 @@ export type Media = {
   gallery: Photo[];
 };
 
-/** Ручные поправки кадрирования превью: имя файла → object-position. */
-const focusOverrides: Record<string, string> = {
-  // "group-photo.jpg": "50% 30%",
+/**
+ * Ручные настройки отдельных снимков по имени файла:
+ *  focus   — кадрирование превью (object-position);
+ *  caption — подпись. Пишите только то, что видно в кадре, без имён детей, событий и названий групп.
+ */
+const photoMeta: Record<string, Pick<Photo, "focus" | "caption">> = {
+  // "group-room.jpg": { focus: "50% 30%", caption: { ru: "Комната группы", kk: "Топ бөлмесі" } },
 };
 
 const IMAGE_EXT = new Set([".png", ".jpg", ".jpeg", ".webp", ".avif"]);
@@ -72,7 +78,7 @@ function toPhoto(e: Entry): Photo | null {
       src: e.url,
       width: rotated ? size.height : size.width,
       height: rotated ? size.width : size.height,
-      focus: focusOverrides[e.file],
+      ...photoMeta[e.file],
     };
   } catch {
     return null;

@@ -98,19 +98,24 @@ export function Gallery({ locale, photos }: { locale: Locale; photos: Photo[] })
                 }}
                 type="button"
                 onClick={() => open(i)}
-                aria-label={t.open(i + 1)}
+                aria-label={p.caption ? `${t.open(i + 1)}: ${p.caption[locale]}` : t.open(i + 1)}
                 className={`group relative block w-full overflow-hidden rounded-2xl bg-line/60 lg:rounded-3xl ${
                   big ? "aspect-[3/2] lg:aspect-auto lg:h-full" : n === 1 ? "aspect-[3/2]" : "aspect-[4/5] lg:aspect-[4/3]"
                 }`}
               >
                 <Image
                   src={p.src}
-                  alt={t.photoAlt(i + 1)}
+                  alt={p.caption?.[locale] ?? t.photoAlt(i + 1)}
                   fill
                   sizes={big ? "(min-width:1024px) 760px, 100vw" : "(min-width:1024px) 380px, 50vw"}
                   className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                   style={{ objectPosition: p.focus ?? "50% 40%" }}
                 />
+                {p.caption && (
+                  <span className="absolute inset-x-2 bottom-2 rounded-xl bg-cream/95 px-3 py-1.5 text-left text-[0.9375rem] font-medium leading-snug text-ink lg:inset-x-3 lg:bottom-3">
+                    {p.caption[locale]}
+                  </span>
+                )}
               </button>
             </li>
           );
@@ -150,12 +155,17 @@ export function Gallery({ locale, photos }: { locale: Locale; photos: Photo[] })
               <Image
                 key={current.src}
                 src={current.src}
-                alt={t.photoAlt(index + 1)}
+                alt={current.caption?.[locale] ?? t.photoAlt(index + 1)}
                 width={current.width}
                 height={current.height}
                 sizes="100vw"
                 className="pointer-events-auto h-full max-h-full w-auto max-w-full object-contain"
               />
+              {current.caption && (
+                <figcaption className="pointer-events-auto absolute inset-x-20 bottom-5 text-center text-[1.0625rem] font-medium text-cream sm:bottom-4">
+                  {current.caption[locale]}
+                </figcaption>
+              )}
             </figure>
             <p className="absolute left-4 top-4 rounded-full bg-[#12241b]/80 px-3 py-2 text-sm font-semibold text-cream" aria-live="polite">
               {t.counter(index + 1, n)}

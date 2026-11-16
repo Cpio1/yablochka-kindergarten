@@ -95,7 +95,7 @@ export function FourApples({ className = "" }: { className?: string }) {
     { x: 270, y: 50, s: 0.9 },
   ];
   return (
-    <svg viewBox="0 0 330 130" className={`decor ${className}`} aria-hidden="true" focusable="false">
+    <svg viewBox="0 0 330 108" className={`decor ${className}`} aria-hidden="true" focusable="false">
       <path d="M6 30C70 18 120 44 180 36S290 14 324 22" stroke={STEM} strokeWidth="5" strokeLinecap="round" fill="none" />
       <path d="M96 30c4-14 18-20 30-16-4 13-17 19-30 16Z" fill={LEAF} />
       <path d="M232 26c6-13 20-17 31-11-6 12-19 16-31 11Z" fill={LEAF_LIGHT} />

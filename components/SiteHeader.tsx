@@ -17,6 +17,10 @@ export function SiteHeader({ locale, nav, logo }: { locale: Locale; nav: NavItem
   const [scrolled, setScrolled] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  // До 5 пунктов меню полностью помещаются от 1024px (проверено на казахских подписях);
+  // при 6–7 пунктах (галерея, документы) полное меню включается только с 1280px.
+  const wide = nav.length > 5;
+  const desktopQuery = wide ? "(min-width: 1280px)" : "(min-width: 1024px)";
 
   // Открытие страницы с #раздел (например, после смены языка): тот же отступ под шапкой, что и при переходе из меню.
   useEffect(() => {
@@ -60,7 +64,7 @@ export function SiteHeader({ locale, nav, logo }: { locale: Locale; nav: NavItem
       }
     };
     // Если окно расширили до десктопа — мобильное меню больше не нужно.
-    const mq = window.matchMedia("(min-width: 1024px)");
+    const mq = window.matchMedia(desktopQuery);
     const onMq = () => mq.matches && setOpen(false);
     document.addEventListener("keydown", onKey);
     mq.addEventListener("change", onMq);
@@ -69,7 +73,7 @@ export function SiteHeader({ locale, nav, logo }: { locale: Locale; nav: NavItem
       document.removeEventListener("keydown", onKey);
       mq.removeEventListener("change", onMq);
     };
-  }, [open]);
+  }, [open, desktopQuery]);
 
   const go = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
@@ -102,7 +106,7 @@ export function SiteHeader({ locale, nav, logo }: { locale: Locale; nav: NavItem
           <span className="font-display text-[1.375rem] font-bold leading-none tracking-tight lg:text-[1.625rem]">{t.hero.title.replace(/[«»]/g, "")}</span>
         </a>
 
-        <nav aria-label={t.menu.title} className="ml-auto hidden lg:block">
+        <nav aria-label={t.menu.title} className={`ml-auto hidden ${wide ? "xl:block" : "lg:block"}`}>
           <ul className="flex items-center gap-1 xl:gap-2">
             {nav.map((item) => (
               <li key={item.id}>
@@ -123,7 +127,7 @@ export function SiteHeader({ locale, nav, logo }: { locale: Locale; nav: NavItem
           <button
             ref={toggleRef}
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border-2 border-ink/15 bg-paper text-ink lg:hidden"
+            className={`inline-flex h-11 w-11 items-center justify-center rounded-full border-2 border-ink/15 bg-paper text-ink ${wide ? "xl:hidden" : "lg:hidden"}`}
             aria-expanded={open}
             aria-controls="mobile-menu"
             aria-label={open ? t.menu.close : t.menu.open}
@@ -141,7 +145,7 @@ export function SiteHeader({ locale, nav, logo }: { locale: Locale; nav: NavItem
         <div
           id="mobile-menu"
           ref={panelRef}
-          className="fixed inset-x-0 bottom-0 top-(--header-h) z-40 overflow-y-auto overscroll-contain bg-cream text-ink motion-safe:animate-pop lg:hidden"
+          className={`fixed inset-x-0 bottom-0 top-(--header-h) z-40 overflow-y-auto overscroll-contain bg-cream text-ink motion-safe:animate-pop ${wide ? "xl:hidden" : "lg:hidden"}`}
         >
           <nav aria-label={t.menu.title} className="mx-auto max-w-md px-4 pb-10 pt-4">
             <ul className="flex flex-col">
@@ -162,10 +166,10 @@ export function SiteHeader({ locale, nav, logo }: { locale: Locale; nav: NavItem
               className="mt-6 flex min-h-14 items-center justify-center gap-2.5 rounded-full bg-apple px-6 text-[1.0625rem] font-semibold text-white"
             >
               <PhoneIcon className="h-5 w-5 shrink-0" />
-              {t.hero.call}
+              {t.call}
             </a>
             <p className="mt-3 text-center text-ink-soft">
-              {t.hero.hoursLabel} · <span className="font-semibold tabular-nums text-ink">{hoursText}</span>
+              {t.contacts.hours} · <span className="font-semibold tabular-nums text-ink">{hoursText}</span>
             </p>
           </nav>
         </div>

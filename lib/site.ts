@@ -22,8 +22,18 @@ export const site = {
     handle: "@yablochko.kids",
     href: "https://www.instagram.com/yablochko.kids/",
   },
-  /** Документы: конкретные файлы (в /public/docs/…) или ссылка на папку. Пусто — раздел скрыт. */
+  /**
+   * Документы. Раздел и пункт меню появляются, только если задана папка или хотя бы один файл.
+   * folder — ссылка на папку, предоставленную заказчиком.
+   * documents — отдельные файлы (в /public/docs/…); подпись — по реальному содержанию («Меню», «Лицензия»…).
+   */
+  documentsFolder: null as string | null,
   documents: [] as { href: string; label: { ru: string; kk: string } }[],
+  /**
+   * Актуальное меню (файл в /public/docs/ или ссылка). null — кнопка «Посмотреть меню» не выводится.
+   * label — подпись с датой, например { ru: "Меню на ноябрь 2026", kk: "2026 жылғы қараша мәзірі" }.
+   */
+  menu: null as { href: string; label: { ru: string; kk: string } } | null,
   /** Ссылка 2GIS от заказчика. null — карта и ссылка не выводятся. */
   map2gis: null as string | null,
 } as const;

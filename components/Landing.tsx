@@ -1,23 +1,38 @@
 import Image from "next/image";
-import { getDictionary, type Locale, type SectionId } from "@/lib/i18n";
+import { Fragment } from "react";
+import { getDictionary, PHONE_TOKEN, type Locale, type SectionId } from "@/lib/i18n";
 import { getMedia, type AboutMedia, type Photo } from "@/lib/media";
 import { hoursText, site } from "@/lib/site";
 import { AppleMark, ClockIcon, DocIcon, FourApples, HeroApple, InstagramIcon, PhoneIcon, Plate, StemLeaf, Twig, WhatsAppIcon } from "./art";
 import { Gallery } from "./Gallery";
+import { SectionLink } from "./SectionLink";
 import { SiteHeader } from "./SiteHeader";
 
 const container = "mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8";
 const btnPrimary =
   "inline-flex min-h-14 items-center justify-center gap-2.5 rounded-full bg-apple px-7 text-[1.0625rem] font-semibold text-white shadow-[0_8px_20px_-10px_rgb(185_51_53/0.8)] transition-[background-color,transform] duration-150 hover:bg-apple-dark active:translate-y-px";
+const btnSecondary =
+  "inline-flex min-h-14 items-center justify-center gap-2 rounded-full border-2 border-ink/20 bg-paper px-6 text-[1.0625rem] font-semibold text-ink transition-colors duration-150 hover:border-ink";
 const h2 = "font-display text-[clamp(1.875rem,1.4rem+2vw,2.75rem)] font-bold leading-[1.1] tracking-[-0.01em] text-ink";
+const h3 = "font-display text-[1.25rem] font-semibold leading-snug text-ink lg:text-[1.375rem]";
+const eyebrow = "text-[1rem] font-semibold text-ink-soft";
+const lead = "text-[clamp(1.0625rem,1rem+0.35vw,1.25rem)] leading-relaxed text-ink";
 
 export function Landing({ locale }: { locale: Locale }) {
   const t = getDictionary(locale);
   const media = getMedia();
   const hasGallery = media.gallery.length > 0;
-  const hasDocs = site.documents.length > 0;
+  const hasDocs = Boolean(site.documentsFolder) || site.documents.length > 0;
 
-  const navIds: SectionId[] = ["about", "groups", "food", ...(hasGallery ? (["gallery"] as const) : []), ...(hasDocs ? (["documents"] as const) : []), "contacts"];
+  const navIds: SectionId[] = [
+    "about",
+    "groups",
+    "food",
+    ...(hasGallery ? (["gallery"] as const) : []),
+    "faq",
+    ...(hasDocs ? (["documents"] as const) : []),
+    "contacts",
+  ];
   const nav = navIds.map((id) => ({ id, label: t.nav[id] }));
 
   return (
@@ -35,40 +50,9 @@ export function Landing({ locale }: { locale: Locale }) {
         <About locale={locale} media={media.about} />
         <Groups locale={locale} />
         <Food locale={locale} />
-        {hasGallery && (
-          <section id="gallery" aria-labelledby="gallery-title" className="bg-paper py-14 lg:py-20">
-            <div className={container}>
-              <h2 id="gallery-title" data-anchor className={`${h2} mb-6 lg:mb-10`}>
-                {t.gallery.title}
-              </h2>
-              <Gallery locale={locale} photos={media.gallery} />
-            </div>
-          </section>
-        )}
-        {hasDocs && (
-          <section id="documents" aria-labelledby="documents-title" className="py-12 lg:py-16">
-            <div className={container}>
-              <h2 id="documents-title" data-anchor className={`${h2} mb-6`}>
-                {t.documents.title}
-              </h2>
-              <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {site.documents.map((d) => (
-                  <li key={d.href}>
-                    <a
-                      href={d.href}
-                      target="_blank"
-                      rel="noopener"
-                      className="flex min-h-16 items-center gap-3 rounded-2xl border-2 border-line bg-paper px-5 py-3 font-semibold text-ink transition-colors hover:border-ink"
-                    >
-                      <DocIcon className="h-6 w-6 shrink-0 text-apple" />
-                      <span>{d.label[locale]}</span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-        )}
+        {hasGallery && <GallerySection locale={locale} photos={media.gallery} />}
+        <Faq locale={locale} />
+        {hasDocs && <Documents locale={locale} />}
         <Contacts locale={locale} />
       </main>
 
@@ -76,10 +60,10 @@ export function Landing({ locale }: { locale: Locale }) {
         <div className={`${container} flex flex-col gap-3 py-8 text-[0.9375rem] text-ink-soft sm:flex-row sm:items-center sm:justify-between`}>
           <p className="flex items-center gap-2 font-semibold text-ink">
             <AppleMark className="h-7 w-7" />
-            {t.footer.rights}
+            {t.footer.name}
           </p>
           <p>
-            {site.legalName} · © {new Date().getFullYear()}
+            {t.footer.legal}: {site.legalName} · © {new Date().getFullYear()}
           </p>
         </div>
       </footer>
@@ -87,15 +71,33 @@ export function Landing({ locale }: { locale: Locale }) {
   );
 }
 
-/* ───────────── Первый экран ───────────── */
+/* ───────────── Первый экран: «Подходит ли нам сад по возрасту и графику?» ───────────── */
+
+/** «Открываемся в 08:00» → ["Открываемся в ", "08:00", ""]; «08:00-де ашыламыз» → ["", "08:00", "-де ашыламыз"]. */
+function splitTime(s: string): [string, string, string] {
+  const m = s.match(/^(.*?)(\d{2}:\d{2})(.*)$/);
+  return m ? [m[1], m[2], m[3]] : [s, "", ""];
+}
+
+function TimePart({ text }: { text: string }) {
+  const [before, time, after] = splitTime(text);
+  return (
+    <span>
+      {before}
+      <strong className="font-bold tabular-nums">{time}</strong>
+      {after}
+    </span>
+  );
+}
 
 function Hero({ locale, photo }: { locale: Locale; photo: Photo | null }) {
-  const t = getDictionary(locale).hero;
+  const d = getDictionary(locale);
+  const t = d.hero;
   const kicker = (
     <span className="block text-[clamp(1.375rem,1.05rem+1.4vw,2.125rem)] font-semibold leading-tight text-ink">{t.kicker}</span>
   );
   const title = (
-    <span className="block text-[clamp(3.25rem,2rem+5.6vw,6rem)] font-bold leading-[0.98] tracking-[-0.02em] text-apple">{t.title}</span>
+    <span className="block text-[clamp(3rem,1.9rem+5.2vw,5.75rem)] font-bold leading-[0.98] tracking-[-0.02em] text-apple">{t.title}</span>
   );
 
   return (
@@ -107,7 +109,7 @@ function Hero({ locale, photo }: { locale: Locale; photo: Photo | null }) {
       <div
         className={`${container} grid items-center gap-6 pb-10 pt-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-10 lg:py-8 xl:gap-16 [@media(max-height:700px)]:pt-3`}
       >
-        <div className="max-w-xl">
+        <div className="max-w-xl lg:max-w-[38rem]">
           <h1 id="hero-title" className="font-display">
             {t.titleOrder === "kicker-first" ? (
               <>
@@ -121,27 +123,33 @@ function Hero({ locale, photo }: { locale: Locale; photo: Photo | null }) {
               </>
             )}
           </h1>
-          <p className="mt-4 max-w-[30ch] text-[clamp(1.125rem,1rem+0.55vw,1.375rem)] leading-snug text-ink lg:mt-6">{t.lead}</p>
-          <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-leaf px-4 py-2 text-[1.0625rem] text-ink lg:mt-5">
-            <ClockIcon className="h-5 w-5 shrink-0 text-leaf-deep" />
-            <span>
-              {t.hoursLabel} · <strong className="font-bold tabular-nums">{hoursText}</strong>
+          {/* Полное вступление; на низких экранах — короткая версия, чтобы часы и кнопка остались на виду. */}
+          <p className={`${lead} mt-4 max-w-[44ch] lg:mt-6 [@media(max-height:620px)]:hidden`}>{t.intro}</p>
+          <p className={`${lead} mt-3 hidden max-w-[34ch] [@media(max-height:620px)]:block`}>{t.introShort}</p>
+
+          {/* Часы работы: на телефоне — две строки, шире — одна строка через точку. */}
+          <p className="mt-4 inline-flex items-start gap-2.5 rounded-2xl bg-leaf px-4 py-2.5 text-[1.0625rem] leading-snug text-ink lg:mt-6">
+            <ClockIcon className="mt-0.5 h-5 w-5 shrink-0 text-leaf-deep" />
+            <span className="flex flex-col sm:flex-row sm:flex-wrap sm:gap-x-2">
+              <TimePart text={t.opens} />
+              <span aria-hidden="true" className="hidden sm:inline">
+                ·
+              </span>
+              <TimePart text={t.closes} />
             </span>
           </p>
-          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-5 lg:mt-8 [@media(max-height:700px)]:mt-5">
+
+          <div className="mt-5 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 lg:mt-8 [@media(max-height:700px)]:mt-4">
             <a href={site.phone.href} className={`${btnPrimary} w-full sm:w-auto`}>
               <PhoneIcon className="h-5 w-5 shrink-0" />
-              {t.call}
+              {d.call}
             </a>
-            <a
-              href={site.instagram.href}
-              target="_blank"
-              rel="noopener"
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-3 font-semibold text-ink underline decoration-apple/40 decoration-2 underline-offset-4 transition-colors hover:decoration-apple sm:justify-start"
-            >
-              <InstagramIcon className="h-5 w-5 shrink-0 text-apple" />
-              {t.instagram}
-            </a>
+            <SectionLink to="groups" className={`${btnSecondary} w-full sm:w-auto`}>
+              {t.groupsLink}
+              <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14M6 13l6 6 6-6" />
+              </svg>
+            </SectionLink>
           </div>
         </div>
 
@@ -187,42 +195,56 @@ function HeroPhoto({ photo, alt }: { photo: Photo; alt: string }) {
   );
 }
 
-/* ───────────── О садике ───────────── */
+/* ───────────── О садике: представление о «Яблочке» ───────────── */
 
 function About({ locale, media }: { locale: Locale; media: AboutMedia | null }) {
   const t = getDictionary(locale).about;
-  const text = (
-    <div data-anchor className={media ? "" : "max-w-2xl"}>
+
+  const intro = (
+    <div className={media ? "lg:col-start-2" : ""}>
       <Twig className="mb-3 h-6 w-24" />
       <h2 id="about-title" className={h2}>
         {t.title}
       </h2>
-      <p className="mt-4 text-[clamp(1.125rem,1rem+0.5vw,1.375rem)] leading-relaxed text-ink lg:mt-6">
-        {t.text[0]} {t.text[1]}
-      </p>
+      <p className={`${lead} mt-4 max-w-[60ch] lg:mt-5`}>{t.intro}</p>
+    </div>
+  );
+
+  // Отдельный абзац для семьи, которая впервые выбирает сад.
+  const firstTime = (
+    <div className={`rounded-[1.75rem] border-2 border-line bg-paper p-6 sm:p-8 ${media ? "lg:col-start-2" : ""}`}>
+      <h3 className={h3}>{t.firstTimeTitle}</h3>
+      <p className="mt-3 leading-relaxed text-ink">{t.firstTime}</p>
+      <a
+        href={site.phone.href}
+        className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-full font-semibold text-apple underline decoration-apple/35 decoration-2 underline-offset-4 hover:decoration-apple"
+      >
+        <PhoneIcon className="h-5 w-5 shrink-0" />
+        <span className="tabular-nums">{site.phone.display}</span>
+      </a>
     </div>
   );
 
   return (
     <section id="about" aria-labelledby="about-title" className="py-12 lg:py-20">
       <div className={container}>
-        {media ? (
-          <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-16">
-            {text}
-            <AboutMediaView media={media} t={t} />
-          </div>
-        ) : (
-          text
-        )}
+        {/* Телефон: заголовок → вступление → фото/видео → информация для родителей. */}
+        <div data-anchor className={`grid gap-7 lg:grid-cols-2 lg:gap-x-16 ${media ? "lg:gap-y-8" : "lg:items-start"}`}>
+          {intro}
+          {media && <AboutMediaView media={media} t={t} />}
+          {firstTime}
+        </div>
       </div>
     </section>
   );
 }
 
 function AboutMediaView({ media, t }: { media: AboutMedia; t: ReturnType<typeof getDictionary>["about"] }) {
+  const place = "lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:self-center";
   if (media.kind === "image") {
+    // Подпись к кадру не выводится: содержание снимка не подтверждено, alt нейтральный.
     return (
-      <div className="overflow-hidden rounded-[2rem] bg-line lg:order-first" style={{ aspectRatio: `${media.width} / ${media.height}` }}>
+      <div className={`overflow-hidden rounded-[2rem] bg-line ${place}`} style={{ aspectRatio: `${media.width} / ${media.height}` }}>
         <Image
           src={media.src}
           alt={t.mediaAlt}
@@ -237,61 +259,56 @@ function AboutMediaView({ media, t }: { media: AboutMedia; t: ReturnType<typeof 
   }
   const ratio = media.poster ? `${media.poster.width} / ${media.poster.height}` : "4 / 5";
   return (
-    <div className="mx-auto w-full max-w-md overflow-hidden rounded-[2rem] bg-ink lg:order-first" style={{ aspectRatio: ratio }}>
+    <div className={`mx-auto w-full max-w-md overflow-hidden rounded-[2rem] bg-ink ${place}`} style={{ aspectRatio: ratio }}>
       {/* Без автозапуска: звук включает сам пользователь через стандартные элементы управления. */}
-      <video
-        controls
-        playsInline
-        preload="metadata"
-        poster={media.poster?.src}
-        aria-label={t.videoLabel}
-        className="h-full w-full object-contain"
-      >
+      <video controls playsInline preload="metadata" poster={media.poster?.src} aria-label={t.videoLabel} className="h-full w-full object-contain">
         <source src={media.src} type={media.type} />
       </video>
     </div>
   );
 }
 
-/* ───────────── Группы ───────────── */
+/* ───────────── Группы: «Как узнать про группу для моего ребёнка?» ───────────── */
 
 function Groups({ locale }: { locale: Locale }) {
   const t = getDictionary(locale).groups;
   return (
     <section id="groups" aria-labelledby="groups-title" className="pb-6 lg:pb-10">
       <div className={container}>
-        <div data-anchor className="relative grid items-center gap-x-10 gap-y-3 overflow-hidden rounded-[2rem] bg-leaf px-6 py-7 sm:px-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:rounded-[2.75rem] lg:px-14 lg:py-12">
-          <h2 id="groups-title" className={`${h2} lg:col-span-2`}>
-            {t.title}
-          </h2>
-          <p className="flex items-center gap-4 text-ink sm:gap-6">
-            <span className="font-display text-[clamp(5.5rem,4rem+7vw,9.5rem)] font-bold leading-[0.8] tracking-[-0.04em] text-apple">{site.groups}</span>
-            <span className="flex flex-col gap-1">
-              <span className="font-display text-[clamp(1.5rem,1.2rem+1.2vw,2.25rem)] font-semibold leading-none">{t.unit}</span>
-              <span className="max-w-[22ch] text-[clamp(1.0625rem,0.95rem+0.6vw,1.5rem)] font-medium leading-snug">{t.age}</span>
-            </span>
-          </p>
-          <FourApples className="mt-1 w-[min(100%,260px)] justify-self-start lg:mt-0 lg:w-[340px] lg:justify-self-end" />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ───────────── Питание ───────────── */
-
-function Food({ locale }: { locale: Locale }) {
-  const t = getDictionary(locale).food;
-  return (
-    <section id="food" aria-labelledby="food-title" className="py-6 lg:py-10">
-      <div className={container}>
-        <div data-anchor className="flex items-center gap-4 rounded-[2rem] bg-butter px-5 py-6 sm:gap-8 sm:px-10 lg:max-w-4xl lg:rounded-[2.75rem] lg:px-14 lg:py-10">
-          <Plate className="w-24 shrink-0 sm:w-32 lg:w-40" />
+        <div
+          data-anchor
+          className="grid gap-7 rounded-[2rem] bg-leaf px-4 py-7 sm:px-10 sm:py-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14 lg:rounded-[2.75rem] lg:px-14 lg:py-14"
+        >
           <div>
-            <p className="text-[1.0625rem] font-semibold text-ink-soft">{t.title}</p>
-            <h2 id="food-title" className="mt-1 font-display text-[clamp(1.625rem,1.25rem+1.8vw,2.5rem)] font-bold leading-[1.1] text-ink">
-              {t.headline}
+            <p className={eyebrow}>{t.eyebrow}</p>
+            {/* Читается как «4 группы для детей от 2 до 6 лет». */}
+            <h2 id="groups-title" className="mt-2 flex items-center gap-4 font-display text-ink sm:gap-5">
+              <span className="text-[clamp(5rem,3.8rem+6vw,8.5rem)] font-bold leading-[0.8] tracking-[-0.04em] text-apple">{site.groups}</span>
+              <span className="flex flex-col gap-1">
+                <span className="text-[clamp(1.5rem,1.2rem+1.2vw,2.25rem)] font-bold leading-none">{t.unit}</span>
+                <span className="max-w-[20ch] text-[clamp(1.0625rem,0.95rem+0.6vw,1.5rem)] font-semibold leading-snug">{t.age}</span>
+              </span>
             </h2>
+            <FourApples className="mt-4 w-[min(100%,260px)] lg:w-[300px]" />
+            <p className="mt-4 max-w-[58ch] leading-relaxed text-ink lg:text-[1.125rem]">{t.text}</p>
+          </div>
+
+          <div className="flex flex-col gap-5 lg:justify-center">
+            <div className="rounded-[1.5rem] bg-paper/80 p-4 sm:p-7">
+              <h3 className={h3}>{t.askTitle}</h3>
+              <ul className="mt-4 flex flex-col gap-3">
+                {t.ask.map((q) => (
+                  <li key={q} className="flex gap-3 leading-snug text-ink">
+                    <span aria-hidden="true" className="decor mt-[0.45em] h-2.5 w-2.5 shrink-0 rounded-full bg-apple" />
+                    <span>{q}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <a href={site.phone.href} className={`${btnPrimary} w-full sm:w-auto sm:self-start`}>
+              <PhoneIcon className="h-5 w-5 shrink-0" />
+              {t.cta}
+            </a>
           </div>
         </div>
       </div>
@@ -299,50 +316,220 @@ function Food({ locale }: { locale: Locale }) {
   );
 }
 
-/* ───────────── Контакты ───────────── */
+/* ───────────── Питание: «Сколько раз дети едят и где узнать меню?» ───────────── */
+
+function Food({ locale }: { locale: Locale }) {
+  const t = getDictionary(locale).food;
+  return (
+    <section id="food" aria-labelledby="food-title" className="py-6 lg:py-10">
+      <div className={container}>
+        <div
+          data-anchor
+          className="grid gap-x-14 gap-y-5 rounded-[2rem] bg-butter px-4 py-7 sm:px-10 sm:py-10 lg:grid-cols-[auto_minmax(0,1fr)] lg:rounded-[2.75rem] lg:px-14 lg:py-14"
+        >
+          <div className="lg:col-start-2">
+            <p className={eyebrow}>{t.eyebrow}</p>
+            <h2 id="food-title" className={`${h2} mt-2`}>
+              {t.title}
+            </h2>
+          </div>
+
+          {/* Визуальный акцент на цифре 5 (смысл уже передан заголовком). */}
+          <div
+            aria-hidden="true"
+            className="decor flex items-center gap-4 lg:col-start-1 lg:row-span-3 lg:row-start-1 lg:flex-col lg:items-start lg:justify-center lg:gap-2"
+          >
+            <span className="flex items-end gap-2 font-display text-ink">
+              <span className="text-[clamp(5rem,3.8rem+6vw,8.5rem)] font-bold leading-[0.8] tracking-[-0.04em] text-apple">{site.meals}</span>
+              <span className="pb-1 text-[1.25rem] font-semibold leading-tight lg:text-[1.5rem]">{t.countCaption}</span>
+            </span>
+            <Plate className="ml-auto w-24 shrink-0 sm:w-28 lg:ml-0 lg:mt-4 lg:w-40" />
+          </div>
+
+          <p className="max-w-[62ch] leading-relaxed text-ink lg:col-start-2 lg:text-[1.125rem]">{t.text}</p>
+
+          <div className="rounded-[1.5rem] bg-paper/80 p-4 sm:p-7 lg:col-start-2">
+            <h3 className={h3}>{t.specialTitle}</h3>
+            <p className="mt-3 leading-relaxed text-ink">{t.special}</p>
+            {site.menu && (
+              <a href={site.menu.href} target="_blank" rel="noopener" className={`${btnSecondary} mt-5`}>
+                <DocIcon className="h-5 w-5 shrink-0 text-apple" />
+                {t.menu}
+                <span className="font-normal text-ink-soft">· {site.menu.label[locale]}</span>
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ───────────── Галерея (только когда есть реальные фото) ───────────── */
+
+function GallerySection({ locale, photos }: { locale: Locale; photos: Photo[] }) {
+  const t = getDictionary(locale).gallery;
+  return (
+    <section id="gallery" aria-labelledby="gallery-title" className="mt-6 bg-paper py-14 lg:mt-10 lg:py-20">
+      <div className={container}>
+        <div data-anchor className="mb-6 max-w-2xl lg:mb-10">
+          <h2 id="gallery-title" className={h2}>
+            {t.title}
+          </h2>
+          <p className={`${lead} mt-3`}>{t.intro}</p>
+        </div>
+        <Gallery locale={locale} photos={photos} />
+      </div>
+    </section>
+  );
+}
+
+/* ───────────── Вопросы родителей: доступный аккордеон на <details>/<summary> ───────────── */
+
+function Faq({ locale }: { locale: Locale }) {
+  const t = getDictionary(locale).faq;
+  return (
+    <section id="faq" aria-labelledby="faq-title" className="py-12 lg:py-20">
+      <div className={`${container} grid gap-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16`}>
+        <div data-anchor>
+          <Twig className="mb-3 h-6 w-24" />
+          <h2 id="faq-title" className={h2}>
+            {t.title}
+          </h2>
+          <p className="mt-3 max-w-[36ch] leading-relaxed text-ink-soft">{t.lead}</p>
+        </div>
+        <div className="border-t-2 border-line">
+          {t.items.map((item) => (
+            <details key={item.q} className="group border-b-2 border-line">
+              <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 rounded-xl py-4 font-display text-[1.125rem] font-semibold leading-snug text-ink transition-colors hover:text-apple lg:text-[1.25rem] [&::-webkit-details-marker]:hidden">
+                <span>{item.q}</span>
+                <span
+                  aria-hidden="true"
+                  className="decor flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-leaf text-ink transition-transform duration-200 group-open:rotate-45"
+                >
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                </span>
+              </summary>
+              <p className="max-w-[62ch] pb-5 pr-2 leading-relaxed text-ink lg:pr-14">
+                <WithPhone text={item.a} />
+              </p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Подставляет вместо {phone} кликабельный номер. */
+function WithPhone({ text }: { text: string }) {
+  const parts = text.split(PHONE_TOKEN);
+  return (
+    <>
+      {parts.map((part, i) => (
+        <Fragment key={i}>
+          {part}
+          {i < parts.length - 1 && (
+            <a href={site.phone.href} className="whitespace-nowrap font-semibold text-apple underline decoration-apple/35 underline-offset-2 hover:decoration-apple">
+              {site.phone.display}
+            </a>
+          )}
+        </Fragment>
+      ))}
+    </>
+  );
+}
+
+/* ───────────── Документы (только когда есть папка или файлы) ───────────── */
+
+function Documents({ locale }: { locale: Locale }) {
+  const t = getDictionary(locale).documents;
+  return (
+    <section id="documents" aria-labelledby="documents-title" className="pb-12 lg:pb-20">
+      <div className={container}>
+        <div data-anchor className="rounded-[2rem] border-2 border-line bg-paper px-5 py-7 sm:px-10 lg:px-14 lg:py-12">
+          <h2 id="documents-title" className={h2}>
+            {t.title}
+          </h2>
+          {site.documentsFolder && (
+            <>
+              <p className="mt-3 max-w-[60ch] leading-relaxed text-ink">{t.folderText}</p>
+              <a href={site.documentsFolder} target="_blank" rel="noopener" className={`${btnSecondary} mt-5`}>
+                <DocIcon className="h-5 w-5 shrink-0 text-apple" />
+                {t.openFolder}
+              </a>
+            </>
+          )}
+          {site.documents.length > 0 && (
+            <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {site.documents.map((doc) => (
+                <li key={doc.href}>
+                  <a
+                    href={doc.href}
+                    target="_blank"
+                    rel="noopener"
+                    className="flex min-h-16 items-center gap-3 rounded-2xl border-2 border-line bg-cream px-5 py-3 font-semibold text-ink transition-colors hover:border-ink"
+                  >
+                    <DocIcon className="h-6 w-6 shrink-0 text-apple" />
+                    <span>{doc.label[locale]}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ───────────── Контакты: «Куда обратиться и что можно уточнить?» ───────────── */
 
 function Contacts({ locale }: { locale: Locale }) {
   const t = getDictionary(locale).contacts;
-  const row =
-    "flex min-h-16 items-center gap-4 rounded-2xl border-2 border-line bg-paper px-5 py-3 text-ink transition-colors";
+  const card = "flex min-h-[4.5rem] items-center gap-4 rounded-[1.5rem] px-5 py-4 transition-colors";
+  const label = "block text-[0.9375rem] leading-snug";
   return (
-    <section id="contacts" aria-labelledby="contacts-title" className="py-14 lg:py-20">
-      <div className={`${container} grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-end lg:gap-16`}>
+    <section id="contacts" aria-labelledby="contacts-title" className="bg-leaf/45 py-14 lg:py-20">
+      <div className={`${container} grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-16`}>
         <div data-anchor>
           <Twig className="mb-3 h-6 w-24" />
           <h2 id="contacts-title" className={h2}>
             {t.title}
           </h2>
-          <p className="mt-3 max-w-[34ch] text-ink-soft">{t.lead}</p>
-          <p className="mt-6 text-[0.9375rem] text-ink-soft">{t.phone}</p>
-          <a
-            href={site.phone.href}
-            className="mt-1 inline-flex min-h-14 items-center gap-3 rounded-2xl font-display text-[clamp(1.75rem,1.2rem+2.6vw,3.25rem)] font-bold leading-none text-apple underline decoration-apple/30 decoration-[3px] underline-offset-[6px] transition-colors hover:decoration-apple"
-          >
-            <span className="whitespace-nowrap tabular-nums">{site.phone.display}</span>
-          </a>
+          <p className={`${lead} mt-4 max-w-[46ch]`}>{t.lead}</p>
         </div>
 
         <ul className="grid gap-3">
-          <li className={row}>
-            <ClockIcon className="h-6 w-6 shrink-0 text-leaf-deep" />
-            <span>
-              <span className="block text-[0.9375rem] text-ink-soft">{t.hours}</span>
-              <span className="font-display text-xl font-semibold tabular-nums">{hoursText}</span>
-            </span>
+          <li>
+            <a href={site.phone.href} className={`${card} bg-apple text-white shadow-[0_10px_24px_-14px_rgb(185_51_53/0.9)] hover:bg-apple-dark`}>
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15">
+                <PhoneIcon className="h-6 w-6" />
+              </span>
+              <span>
+                <span className={`${label} text-white`}>{t.phone}</span>
+                <span className="whitespace-nowrap font-display text-[clamp(1.375rem,1.1rem+1.2vw,1.875rem)] font-bold tabular-nums">
+                  {site.phone.display}
+                </span>
+              </span>
+            </a>
           </li>
           <li>
-            <a href={site.instagram.href} target="_blank" rel="noopener" className={`${row} hover:border-ink`}>
-              <InstagramIcon className="h-6 w-6 shrink-0 text-apple" />
+            <a href={site.instagram.href} target="_blank" rel="noopener" className={`${card} border-2 border-line bg-paper text-ink hover:border-ink`}>
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-apple-soft text-apple">
+                <InstagramIcon className="h-6 w-6" />
+              </span>
               <span>
-                <span className="block text-[0.9375rem] text-ink-soft">{t.instagram}</span>
-                <span className="font-display text-xl font-semibold">{site.instagram.handle}</span>
+                <span className={`${label} text-ink-soft`}>{t.instagram}</span>
+                <span className="font-display text-[1.25rem] font-semibold">{site.instagram.handle}</span>
               </span>
             </a>
           </li>
           {site.whatsapp && (
             <li>
-              <a href={site.whatsapp} target="_blank" rel="noopener" className={`${row} hover:border-ink`}>
+              <a href={site.whatsapp} target="_blank" rel="noopener" className={`${card} border-2 border-line bg-paper text-ink hover:border-ink`}>
                 <WhatsAppIcon className="h-6 w-6 shrink-0 text-leaf-deep" />
                 <span className="font-semibold">{t.whatsapp}</span>
               </a>
@@ -350,16 +537,19 @@ function Contacts({ locale }: { locale: Locale }) {
           )}
           {site.map2gis && (
             <li>
-              <a href={site.map2gis} target="_blank" rel="noopener" className={`${row} hover:border-ink`}>
+              <a href={site.map2gis} target="_blank" rel="noopener" className={`${card} border-2 border-line bg-paper text-ink hover:border-ink`}>
                 <span className="font-semibold">{t.map}</span>
               </a>
             </li>
           )}
-          <li className="pt-1">
-            <a href={site.phone.href} className={`${btnPrimary} w-full`}>
-              <PhoneIcon className="h-5 w-5 shrink-0" />
-              {getDictionary(locale).hero.call}
-            </a>
+          <li className={`${card} bg-paper/70 text-ink`}>
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-leaf text-leaf-deep">
+              <ClockIcon className="h-6 w-6" />
+            </span>
+            <span>
+              <span className={`${label} text-ink-soft`}>{t.hours}</span>
+              <span className="font-display text-[1.25rem] font-semibold tabular-nums">{hoursText}</span>
+            </span>
           </li>
         </ul>
       </div>
