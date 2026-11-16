@@ -89,10 +89,11 @@ export function StemLeaf({ className = "" }: { className?: string }) {
 /** Четыре яблока на ветке — визуальная опора для цифры 4 в разделе «Группы». */
 export function FourApples({ className = "" }: { className?: string }) {
   const apples = [
-    { x: 58, y: 54, s: 1 },
-    { x: 128, y: 70, s: 0.92 },
-    { x: 200, y: 66, s: 1.05 },
-    { x: 270, y: 50, s: 0.9 },
+    // Разный размер; y подобран так, чтобы черенок касался ветки.
+    { x: 58, y: 63, s: 1.2 },
+    { x: 128, y: 56, s: 0.75 },
+    { x: 200, y: 62, s: 1 },
+    { x: 270, y: 41, s: 0.65 },
   ];
   return (
     <svg viewBox="0 0 330 108" className={`decor ${className}`} aria-hidden="true" focusable="false">
@@ -181,6 +182,63 @@ export function DocIcon({ className = "" }: { className?: string }) {
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true" focusable="false" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z" />
       <path d="M14 3v5h5M9 13h6M9 17h6" />
+    </svg>
+  );
+}
+
+/* ───── Книжная аппликация: плоские «вырезанные» формы с мягкой тенью под бумагой ───── */
+
+const PAPER_SHADOW = "#203F31";
+
+/** Маленькое яблочко из цветной бумаги — рядом с названием на первом экране. */
+export function PaperApple({ className = "" }: { className?: string }) {
+  const body = "M32 20c-6-5-19-4-22 9-3 13 5 28 15 29 3 0 5-1.5 7-1.5s4 1.5 7 1.5c10-1 18-16 15-29-3-13-16-14-22-9Z";
+  return (
+    <svg viewBox="0 0 64 64" className={`decor ${className}`} aria-hidden="true" focusable="false">
+      <path d={body} transform="translate(2 3)" fill={PAPER_SHADOW} opacity=".14" />
+      <path d={body} fill="#C63B3C" />
+      {/* второй слой бумаги — блик */}
+      <path d="M17 27c1-5 5-8 9-8-4 4-6 9-6 15-2-1-3.5-3.5-3-7Z" fill="#E36A60" />
+      <path d="M31 21c0-5 1-9 4-12" stroke={STEM} strokeWidth="3.4" strokeLinecap="round" fill="none" />
+      <g className="origin-[35px_13px] motion-safe:animate-sway">
+        <path d="M35 13c4-7 12-9 18-6-3 7-11 10-18 6Z" transform="translate(1.5 2)" fill={PAPER_SHADOW} opacity=".12" />
+        <path d="M35 13c4-7 12-9 18-6-3 7-11 10-18 6Z" fill={LEAF} />
+        {/* прорезь-прожилка */}
+        <path d="M37 12.5c5-2.5 9-4 14-5" stroke="#DCEBCF" strokeWidth="1.3" strokeLinecap="round" fill="none" />
+      </g>
+    </svg>
+  );
+}
+
+/** Штрих цветного карандаша под заголовком с листочком на правом конце. */
+export function PencilUnderline({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 200 26" className={`decor ${className}`} aria-hidden="true" focusable="false" preserveAspectRatio="xMinYMid meet">
+      {/* два неровных прохода карандашом — как настоящий штрих */}
+      <path d="M4 15C38 11 76 17 112 13S160 11 172 12.5" stroke="#C63B3C" strokeWidth="4.5" strokeLinecap="round" fill="none" opacity=".85" />
+      <path d="M8 17.5C44 14 82 18.5 118 15.5S158 14 170 14.5" stroke="#C63B3C" strokeWidth="2" strokeLinecap="round" fill="none" opacity=".4" />
+      <g transform="translate(172 12.5) rotate(-28)">
+        <path d="M0 0c4-8 13-10 20-6-4 8-13 10-20 6Z" transform="translate(1.2 1.8)" fill={PAPER_SHADOW} opacity=".12" />
+        <path d="M0 0c4-8 13-10 20-6-4 8-13 10-20 6Z" fill={LEAF} />
+        <path d="M2 -0.6c5-2.6 10-4 16-5" stroke="#DCEBCF" strokeWidth="1.1" strokeLinecap="round" fill="none" />
+      </g>
+    </svg>
+  );
+}
+
+/** Рисованный фотоаппарат — возле заголовка галереи. */
+export function PaperCamera({ className = "" }: { className?: string }) {
+  const body = "M8 18c0-3 2-5 5-5h8l3-5h16l3 5h8c3 0 5 2 5 5v22c0 3-2 5-5 5H13c-3 0-5-2-5-5V18Z";
+  return (
+    <svg viewBox="0 0 64 52" className={`decor ${className}`} aria-hidden="true" focusable="false">
+      <path d={body} transform="translate(2 3)" fill={PAPER_SHADOW} opacity=".14" />
+      <path d={body} fill={LEAF} />
+      <path d="M8 22h48v6H8z" fill="#4A7638" />
+      <circle cx="32" cy="29" r="11" fill="#FFF3D6" />
+      <circle cx="32" cy="29" r="6.5" fill="#203F31" />
+      <circle cx="29.5" cy="26.5" r="2" fill="#fff" opacity=".8" />
+      <rect x="45" y="16" width="6" height="4" rx="1.5" fill="#FFE3A1" />
+      <circle cx="15" cy="17.5" r="2.4" fill="#C63B3C" />
     </svg>
   );
 }

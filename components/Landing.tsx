@@ -3,7 +3,22 @@ import { Fragment } from "react";
 import { getDictionary, PHONE_TOKEN, type Locale, type SectionId } from "@/lib/i18n";
 import { getMedia, type AboutMedia, type Photo } from "@/lib/media";
 import { hoursText, site } from "@/lib/site";
-import { AppleMark, ClockIcon, DocIcon, FourApples, HeroApple, InstagramIcon, PhoneIcon, Plate, StemLeaf, Twig, WhatsAppIcon } from "./art";
+import {
+  AppleMark,
+  ClockIcon,
+  DocIcon,
+  FourApples,
+  HeroApple,
+  InstagramIcon,
+  PaperApple,
+  PaperCamera,
+  PencilUnderline,
+  PhoneIcon,
+  Plate,
+  StemLeaf,
+  Twig,
+  WhatsAppIcon,
+} from "./art";
 import { Gallery } from "./Gallery";
 import { SectionLink } from "./SectionLink";
 import { SiteHeader } from "./SiteHeader";
@@ -93,8 +108,12 @@ function TimePart({ text }: { text: string }) {
 function Hero({ locale, photo }: { locale: Locale; photo: Photo | null }) {
   const d = getDictionary(locale);
   const t = d.hero;
+  // Яблочко из цветной бумаги рядом с названием: небольшое, не мешает заголовку и кнопке звонка.
   const kicker = (
-    <span className="block text-[clamp(1.375rem,1.05rem+1.4vw,2.125rem)] font-semibold leading-tight text-ink">{t.kicker}</span>
+    <span className="flex items-center gap-2 text-[clamp(1.375rem,1.05rem+1.4vw,2.125rem)] font-semibold leading-tight text-ink">
+      {t.kicker}
+      <PaperApple className="h-[1.5em] w-[1.5em] shrink-0 -translate-y-0.5" />
+    </span>
   );
   const title = (
     <span className="block text-[clamp(3rem,1.9rem+5.2vw,5.75rem)] font-bold leading-[0.98] tracking-[-0.02em] text-apple">{t.title}</span>
@@ -202,11 +221,12 @@ function About({ locale, media }: { locale: Locale; media: AboutMedia | null }) 
 
   const intro = (
     <div className={media ? "lg:col-start-2" : ""}>
-      <Twig className="mb-3 h-6 w-24" />
       <h2 id="about-title" className={h2}>
         {t.title}
       </h2>
-      <p className={`${lead} mt-4 max-w-[60ch] lg:mt-5`}>{t.intro}</p>
+      {/* Штрих цветного карандаша с листочком на правом конце. */}
+      <PencilUnderline className="mt-2 h-5 w-40 lg:h-6 lg:w-52" />
+      <p className={`${lead} mt-3 max-w-[60ch] lg:mt-4`}>{t.intro}</p>
     </div>
   );
 
@@ -280,17 +300,24 @@ function Groups({ locale }: { locale: Locale }) {
           className="grid gap-7 rounded-[2rem] bg-leaf px-4 py-7 sm:px-10 sm:py-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14 lg:rounded-[2.75rem] lg:px-14 lg:py-14"
         >
           <div>
-            <p className={eyebrow}>{t.eyebrow}</p>
-            {/* Читается как «4 группы для детей от 2 до 6 лет». */}
-            <h2 id="groups-title" className="mt-2 flex items-center gap-4 font-display text-ink sm:gap-5">
-              <span className="text-[clamp(5rem,3.8rem+6vw,8.5rem)] font-bold leading-[0.8] tracking-[-0.04em] text-apple">{site.groups}</span>
-              <span className="flex flex-col gap-1">
-                <span className="text-[clamp(1.5rem,1.2rem+1.2vw,2.25rem)] font-bold leading-none">{t.unit}</span>
-                <span className="max-w-[20ch] text-[clamp(1.0625rem,0.95rem+0.6vw,1.5rem)] font-semibold leading-snug">{t.age}</span>
-              </span>
-            </h2>
-            <FourApples className="mt-4 w-[min(100%,260px)] lg:w-[300px]" />
-            <p className="mt-4 max-w-[58ch] leading-relaxed text-ink lg:text-[1.125rem]">{t.text}</p>
+            {/* Телефон: одна небольшая веточка в строке подписи — без отдельной строки под декор. */}
+            <div className="flex items-center justify-between gap-3">
+              <p className={eyebrow}>{t.eyebrow}</p>
+              <FourApples className="h-auto w-28 shrink-0 lg:hidden" />
+            </div>
+            <div className="mt-2 flex items-center gap-6">
+              {/* Читается как «4 группы для детей от 2 до 6 лет». */}
+              <h2 id="groups-title" className="flex min-w-0 items-center gap-4 font-display text-ink sm:gap-5">
+                <span className="text-[clamp(5rem,3.8rem+6vw,8.5rem)] font-bold leading-[0.8] tracking-[-0.04em] text-apple">{site.groups}</span>
+                <span className="flex flex-col gap-1">
+                  <span className="text-[clamp(1.5rem,1.2rem+1.2vw,2.25rem)] font-bold leading-none">{t.unit}</span>
+                  <span className="max-w-[20ch] text-[clamp(1.0625rem,0.95rem+0.6vw,1.5rem)] font-semibold leading-snug">{t.age}</span>
+                </span>
+              </h2>
+              {/* Ноутбук: ветка с четырьмя яблоками рядом с «4 группы». */}
+              <FourApples className="hidden h-auto w-[clamp(150px,14vw,210px)] shrink-0 lg:block" />
+            </div>
+            <p className="mt-5 max-w-[58ch] leading-relaxed text-ink lg:text-[1.125rem]">{t.text}</p>
           </div>
 
           <div className="flex flex-col gap-5 lg:justify-center">
@@ -327,23 +354,27 @@ function Food({ locale }: { locale: Locale }) {
           data-anchor
           className="grid gap-x-14 gap-y-5 rounded-[2rem] bg-butter px-4 py-7 sm:px-10 sm:py-10 lg:grid-cols-[auto_minmax(0,1fr)] lg:rounded-[2.75rem] lg:px-14 lg:py-14"
         >
-          <div className="lg:col-start-2">
-            <p className={eyebrow}>{t.eyebrow}</p>
-            <h2 id="food-title" className={`${h2} mt-2`}>
-              {t.title}
-            </h2>
+          <div className="flex items-center gap-3 lg:col-start-2 lg:block">
+            <div className="min-w-0 flex-1">
+              <p className={eyebrow}>{t.eyebrow}</p>
+              <h2 id="food-title" className={`${h2} mt-2`}>
+                {t.title}
+              </h2>
+            </div>
+            {/* Телефон: тарелка сбоку от заголовка, а не отдельной строкой. */}
+            <Plate className="w-20 shrink-0 sm:w-24 lg:hidden" />
           </div>
 
           {/* Визуальный акцент на цифре 5 (смысл уже передан заголовком). */}
           <div
             aria-hidden="true"
-            className="decor flex items-center gap-4 lg:col-start-1 lg:row-span-3 lg:row-start-1 lg:flex-col lg:items-start lg:justify-center lg:gap-2"
+            className="decor hidden lg:col-start-1 lg:row-span-3 lg:row-start-1 lg:flex lg:flex-col lg:items-start lg:justify-center lg:gap-2"
           >
             <span className="flex items-end gap-2 font-display text-ink">
               <span className="text-[clamp(5rem,3.8rem+6vw,8.5rem)] font-bold leading-[0.8] tracking-[-0.04em] text-apple">{site.meals}</span>
               <span className="pb-1 text-[1.25rem] font-semibold leading-tight lg:text-[1.5rem]">{t.countCaption}</span>
             </span>
-            <Plate className="ml-auto w-24 shrink-0 sm:w-28 lg:ml-0 lg:mt-4 lg:w-40" />
+            <Plate className="mt-4 w-40" />
           </div>
 
           <p className="max-w-[62ch] leading-relaxed text-ink lg:col-start-2 lg:text-[1.125rem]">{t.text}</p>
@@ -373,9 +404,12 @@ function GallerySection({ locale, photos }: { locale: Locale; photos: Photo[] })
     <section id="gallery" aria-labelledby="gallery-title" className="mt-6 bg-paper py-14 lg:mt-10 lg:py-20">
       <div className={container}>
         <div data-anchor className="mb-6 max-w-2xl lg:mb-10">
-          <h2 id="gallery-title" className={h2}>
-            {t.title}
-          </h2>
+          <div className="flex items-center gap-3 lg:gap-4">
+            <h2 id="gallery-title" className={h2}>
+              {t.title}
+            </h2>
+            <PaperCamera className="h-9 w-11 shrink-0 lg:h-12 lg:w-14" />
+          </div>
           <p className={`${lead} mt-3`}>{t.intro}</p>
         </div>
         <Gallery locale={locale} photos={photos} />
