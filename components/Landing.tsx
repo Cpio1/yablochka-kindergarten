@@ -448,25 +448,42 @@ function Food({ locale }: { locale: Locale }) {
 
 /* ───────────── Галерея (только когда есть реальные фото) ───────────── */
 
+/*
+ * Высота композиции = окно − шапка − отступ якоря (12px) − 12px снизу.
+ * Заголовок и стрелки берут свою высоту, сетка 2 × 2 / 3 × 2 — всё оставшееся,
+ * поэтому после перехода из меню заголовок, оба ряда и стрелки видны на одном экране
+ * (1366 × 768, 375 × 667). Пределы не дают превью стать крошечными или огромными;
+ * секция растёт вместе с содержимым и ничего не обрезает.
+ */
 function GallerySection({ locale, photos }: { locale: Locale; photos: Photo[] }) {
   const t = getDictionary(locale).gallery;
   return (
-    <section id="gallery" aria-labelledby="gallery-title" className="relative isolate bg-paper py-14 lg:py-20">
+    // Отрицательный scroll-margin компенсирует верхний отступ секции при переходе по ссылке #gallery без JS.
+    <section
+      id="gallery"
+      aria-labelledby="gallery-title"
+      className="relative isolate scroll-mt-[-2.5rem] bg-paper py-10 lg:scroll-mt-[-3.5rem] lg:py-14"
+    >
       <Wave color="var(--color-paper)" variant={2} />
       <div className={container}>
-        {/* Заголовок — как начало страницы детского альбома: скотч, фотоаппарат, голубой штрих карандаша. */}
-        <div data-anchor className="relative mb-6 max-w-2xl lg:mb-10">
-          <Tape className="pointer-events-none absolute -top-7 left-1 w-20 -rotate-6 lg:-top-9 lg:w-24" />
-          <div className="flex items-center gap-3 lg:gap-4">
-            <h2 id="gallery-title" className={h2}>
-              {t.title}
-            </h2>
-            <PaperCamera className="h-9 w-11 shrink-0 lg:h-12 lg:w-14" />
+        <div
+          data-anchor
+          className="flex h-[calc(100svh-var(--header-h)-24px)] min-h-[29rem] max-h-[52rem] flex-col"
+        >
+          {/* Заголовок — как начало страницы детского альбома: скотч, фотоаппарат, голубой штрих карандаша. */}
+          <div className="relative mb-3 max-w-2xl shrink-0 lg:mb-5">
+            <Tape className="pointer-events-none absolute -top-3 left-1 w-16 -rotate-6 lg:-top-4 lg:w-20" />
+            <div className="flex items-center gap-3 lg:gap-4">
+              <h2 id="gallery-title" className={h2}>
+                {t.title}
+              </h2>
+              <PaperCamera className="h-8 w-10 shrink-0 lg:h-12 lg:w-14" />
+            </div>
+            <BlueStroke className="mt-1 h-3.5 w-40 lg:h-5 lg:w-56" />
+            <p className="mt-2 text-[1rem] leading-snug text-ink lg:mt-3 lg:text-[1.125rem] lg:leading-relaxed">{t.intro}</p>
           </div>
-          <BlueStroke className="mt-1 h-4 w-44 lg:h-5 lg:w-56" />
-          <p className={`${lead} mt-3`}>{t.intro}</p>
+          <Gallery locale={locale} photos={photos} />
         </div>
-        <Gallery locale={locale} photos={photos} />
       </div>
     </section>
   );

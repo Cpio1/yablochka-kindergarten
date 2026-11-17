@@ -5,7 +5,7 @@ import path from "node:path";
 import { imageSize } from "image-size";
 
 /**
- * Медиафайлы ищутся при сборке в /public и /public/media (без вложенных папок):
+ * Медиафайлы ищутся при сборке в /public, /public/media и /public/images (без вложенных папок):
  *   main-page.(png|jpg|jpeg|webp|avif)    — первый экран
  *   main-page2.(тот же список | mp4|webm|mov) — раздел «О садике»
  *   main-page2-poster.(jpg|png|webp)      — обложка для видео (необязательно)
@@ -44,7 +44,30 @@ export type Media = {
  */
 const photoMeta: Record<string, Pick<Photo, "focus" | "caption">> = {
   // "group-room.jpg": { focus: "50% 30%", caption: { ru: "Комната группы", kk: "Топ бөлмесі" } },
+  "image1.jpeg": { focus: "50% 55%" },
+  "image2.jpeg": { focus: "50% 60%" },
+  "image3.jpeg": { focus: "50% 58%" },
+  "image5.jpeg": { focus: "50% 62%" },
+  "image7.jpeg": { focus: "50% 66%" },
+  "image8.jpeg": { focus: "50% 62%" },
+  "image9.jpeg": { focus: "50% 62%" },
+  "image10.jpeg": { focus: "75% 62%" },
+  "image11.jpeg": { focus: "50% 48%" },
+  "image12.jpeg": { focus: "50% 58%" },
+  "image14.jpeg": { focus: "50% 28%" },
+  "image15.jpeg": { focus: "50% 32%" },
+  "image16.jpeg": { focus: "45% 52%" },
+  "image17.jpeg": { focus: "50% 30%" },
+  "image18.jpeg": { focus: "35% 55%" },
+  "image19.jpeg": { focus: "50% 58%" },
+  "image20.jpeg": { focus: "40% 48%" },
 };
+
+/**
+ * Почти одинаковые кадры (та же сцена, повторный снимок) — байтами они различаются,
+ * поэтому отсеиваются вручную. В галерее остаётся по одному кадру каждой сцены.
+ */
+const EXCLUDE = new Set(["image4.jpeg", "image6.jpeg", "image13.jpeg"]);
 
 const IMAGE_EXT = new Set([".png", ".jpg", ".jpeg", ".webp", ".avif"]);
 const VIDEO_EXT: Record<string, string> = { ".mp4": "video/mp4", ".webm": "video/webm", ".mov": "video/mp4" };
@@ -94,7 +117,11 @@ let cached: Media | null = null;
 export function getMedia(): Media {
   if (cached) return cached;
   const pub = path.join(process.cwd(), "public");
-  const entries = [...listDir(pub, ""), ...listDir(path.join(pub, "media"), "/media")];
+  const entries = [
+    ...listDir(pub, ""),
+    ...listDir(path.join(pub, "media"), "/media"),
+    ...listDir(path.join(pub, "images"), "/images"),
+  ];
   const images = entries.filter((e) => IMAGE_EXT.has(e.ext));
 
   const heroEntry = images.find((e) => e.base === "main-page");
@@ -118,7 +145,7 @@ export function getMedia(): Media {
 
   // Из одинаковых по содержимому файлов остаётся оригинал — файл с самым коротким именем («photo.jpg», а не «photo-copy.jpg»).
   const gallery = images
-    .filter((e) => !e.base.startsWith("main-page") && !SERVICE.test(e.base))
+    .filter((e) => !e.base.startsWith("main-page") && !SERVICE.test(e.base) && !EXCLUDE.has(e.file))
     .sort((a, b) => a.file.length - b.file.length || a.file.localeCompare(b.file))
     .filter((e) => {
       const h = hashOf(e);
