@@ -258,7 +258,11 @@ function About({ locale, media }: { locale: Locale; media: AboutMedia | null }) 
       </h2>
       {/* Штрих цветного карандаша с листочком на правом конце. */}
       <PencilUnderline className="mt-2 h-5 w-40 lg:h-6 lg:w-52" />
-      <p className={`${lead} mt-3 max-w-[60ch] lg:mt-4`}>{t.intro}</p>
+      {t.intro.map((paragraph, i) => (
+        <p key={i} className={`${lead} max-w-[60ch] ${i === 0 ? "mt-3 lg:mt-4" : "mt-4"}`}>
+          {paragraph}
+        </p>
+      ))}
     </div>
   );
 
